@@ -14,8 +14,12 @@ internal class DemoDbContext : DbContext
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         if (!optionsBuilder.IsConfigured)
-            //optionsBuilder.UseSqlServer(@"Server=(localdb)\mssqllocaldb;Database=EntityFrameworkDemo;Trusted_Connection=true;MultipleActiveResultSets=true");
-            optionsBuilder.UseSqlServer(@"Server=localhost;Database=EntityFrameworkDemo;Trusted_Connection=true;MultipleActiveResultSets=true;TrustServerCertificate=True");
+        {
+            //const string connectionStringName = @"Server=(localdb)\mssqllocaldb;Database=EntityFrameworkDemo;Trusted_Connection=true;MultipleActiveResultSets=true";
+            const string connectionString = @"Server=localhost;Database=EntityFrameworkDemo;Trusted_Connection=true;MultipleActiveResultSets=true;TrustServerCertificate=True";
+
+            optionsBuilder.UseSqlServer(connectionString);
+        }
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

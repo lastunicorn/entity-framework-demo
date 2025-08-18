@@ -14,20 +14,20 @@ internal static class Program
 
     private static async Task DisplayCustomers()
     {
-        using DemoDbContext context = new();
+        using DemoDbContext dbContext = new();
 
-        List<Customer> customers = await context.Customers
+        List<Customer> customers = await dbContext.Customers
             .ToListAsync();
 
         Display(customers);
 
-        List<MyProduct> products = await context.Products
+        List<MyProduct> products = await dbContext.Products
             .OrderBy(x => x.ProductName)
             .ToListAsync();
 
         Display(products);
 
-        List<CustomerOrder> orders = await context.Orders
+        List<CustomerOrder> orders = await dbContext.Orders
             .OrderByDescending(x => x.OrderDate)
             .ToListAsync();
 

@@ -1,4 +1,4 @@
-# Step 2 - `DbContext`
+# Step 2 - `DbContext` Class
 
 ## Overview
 
@@ -43,4 +43,3 @@ protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 }
 ```
 
-## 

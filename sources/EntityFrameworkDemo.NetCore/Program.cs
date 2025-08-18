@@ -1,6 +1,9 @@
 ﻿using EntityFrameworkDemo.NetCore.DataAccess;
-using EntityFrameworkDemo.NetCore.Entities;
+using EntityFrameworkDemo.NetCore.UseCases.DisplayAllData;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace EntityFrameworkDemo.NetCore;
 
@@ -9,76 +12,39 @@ internal static class Program
     private static async Task Main(string[] args)
     {
         Console.WriteLine("Entity Framework Demo");
-        await DisplayCustomers();
+
+        IHost host = CreateHostBuilder(args)
+            .Build();
+
+        await ExecuteUseCase(host);
     }
 
-    private static async Task DisplayCustomers()
+    private static IHostBuilder CreateHostBuilder(string[] args)
     {
-        using DemoDbContext dbContext = new();
+        IHostBuilder hostBuilder = Host.CreateDefaultBuilder(args);
 
-        List<Customer> customers = await dbContext.Customers
-            .ToListAsync();
-
-        Display(customers);
-
-        List<MyProduct> products = await dbContext.Products
-            .OrderBy(x => x.ProductName)
-            .ToListAsync();
-
-        Display(products);
-
-        List<CustomerOrder> orders = await dbContext.Orders
-            .OrderByDescending(x => x.OrderDate)
-            .ToListAsync();
-
-        Display(orders);
-    }
-
-    private static void Display(IEnumerable<Customer> customers)
-    {
-        Console.WriteLine();
-        Console.WriteLine("Customers:");
-
-        int count = 0;
-
-        foreach (Customer customer in customers)
+        hostBuilder.ConfigureAppConfiguration((context, config) =>
         {
-            Console.WriteLine($"- {customer.FirstName} {customer.LastName}, Age: {customer.Age}");
-            count++;
-        }
+            config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+        });
 
-        Console.WriteLine($"Found {count} customers.");
+        hostBuilder.ConfigureServices((context, services) =>
+        {
+            string connectionString = context.Configuration.GetConnectionString("DefaultConnection");
+
+            services.AddDbContext<DemoDbContext>(options =>
+                options.UseSqlServer(connectionString));
+
+            services.AddScoped<DisplayAllDataUseCase>();
+        });
+
+        return hostBuilder;
     }
 
-    private static void Display(IEnumerable<MyProduct> products)
+    private static async Task ExecuteUseCase(IHost host)
     {
-        Console.WriteLine();
-        Console.WriteLine("Products:");
-
-        int count = 0;
-
-        foreach (MyProduct product in products)
-        {
-            Console.WriteLine($"- {product.ProductName}, Price: {product.Price:C}");
-            count++;
-        }
-
-        Console.WriteLine($"Found {count} products.");
-    }
-
-    private static void Display(IEnumerable<CustomerOrder> orders)
-    {
-        Console.WriteLine();
-        Console.WriteLine("Orders:");
-
-        int count = 0;
-
-        foreach (CustomerOrder order in orders)
-        {
-            Console.WriteLine($"- {order.OrderDate:d}, Product: {order.Product.ProductName}");
-            count++;
-        }
-
-        Console.WriteLine($"Found {count} orders.");
+        using IServiceScope scope = host.Services.CreateScope();
+        DisplayAllDataUseCase useCase = scope.ServiceProvider.GetRequiredService<DisplayAllDataUseCase>();
+        await useCase.Execute();
     }
 }

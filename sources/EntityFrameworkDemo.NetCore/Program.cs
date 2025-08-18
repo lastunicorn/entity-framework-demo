@@ -32,8 +32,7 @@ internal static class Program
         {
             string connectionString = context.Configuration.GetConnectionString("DefaultConnection");
 
-            services.AddDbContext<DemoDbContext>(options =>
-                options.UseSqlServer(connectionString));
+            services.AddDbContext<DemoDbContext>(options => options.UseSqlServer(connectionString));
 
             services.AddScoped<DisplayAllDataUseCase>();
         });

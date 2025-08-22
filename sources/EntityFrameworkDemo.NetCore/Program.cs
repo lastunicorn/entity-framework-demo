@@ -21,23 +21,19 @@ internal static class Program
 
     private static IHostBuilder CreateHostBuilder(string[] args)
     {
-        IHostBuilder hostBuilder = Host.CreateDefaultBuilder(args);
+        return Host.CreateDefaultBuilder(args)
+            .ConfigureAppConfiguration((context, config) =>
+            {
+                config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+            })
+            .ConfigureServices((context, services) =>
+            {
+                string connectionString = context.Configuration.GetConnectionString("DefaultConnection");
 
-        hostBuilder.ConfigureAppConfiguration((context, config) =>
-        {
-            config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
-        });
+                services.AddDbContext<DemoDbContext>(options => options.UseSqlServer(connectionString));
 
-        hostBuilder.ConfigureServices((context, services) =>
-        {
-            string connectionString = context.Configuration.GetConnectionString("DefaultConnection");
-
-            services.AddDbContext<DemoDbContext>(options => options.UseSqlServer(connectionString));
-
-            services.AddScoped<DisplayAllDataUseCase>();
-        });
-
-        return hostBuilder;
+                services.AddScoped<DisplayAllDataUseCase>();
+            });
     }
 
     private static async Task ExecuteUseCase(IHost host)
